@@ -15,15 +15,24 @@ The [official Docker installation](https://bitwarden.com/help/install-on-premise
 
     :warning: Make sure the `Password=` of the `globalSettings__sqlServer__connectionString` variable in `global.env` matches the `SA_PASSWORD` value in `mssql.env`
 
-2. Check `nginx/default.conf` to replace `wss://localhost` with your appropriate FQDN
+2. Retrieve your Bitwarden self-hosted installation ID and key
 
-3. Generate SSL certificates
+    This is used to contact use in case of essential security update, validate licensing and authenticate your server to push notifications relays.
+
+    Connect to `https://bitwarden.com/host`, enter your e-mail address and edit :
+
+    - `globalSettings__installation__id`
+    - `globalSettings__installation__key`
+
+3. Check `nginx/default.conf` to replace `wss://localhost` with your appropriate FQDN
+
+4. Generate SSL certificates
 
     ```bash
     CERTS_DN="/C=FR/ST=IDF/L=PARIS/O=EXAMPLE" bash generate-certs.sh
     ```
 
-4. Run the project
+5. Run the project
 
     ```bash
     docker-compose up -d

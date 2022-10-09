@@ -1,0 +1,127 @@
+version: '3'
+
+services:
+  mssql:
+    image: bitwarden/mssql:2022.9.2
+    container_name: bitwarden-mssql
+    restart: always
+    stop_grace_period: 60s
+    volumes:
+      - ./mssql/data:/var/opt/mssql/data
+      - ./logs/mssql:/var/opt/mssql/log
+      - ./mssql/backups:/etc/bitwarden/mssql/backups
+    env_file:
+      - mssql.env
+
+  web:
+    image: bitwarden/web:2022.9.2
+    container_name: bitwarden-web
+    restart: always
+    volumes:
+      - ./web:/etc/bitwarden/web
+    env_file:
+      - global.env
+
+  attachments:
+    image: bitwarden/attachments:2022.9.2
+    container_name: bitwarden-attachments
+    restart: always
+    volumes:
+      - ./core/attachments:/etc/bitwarden/core/attachments
+    env_file:
+      - global.env
+
+  api:
+    image: bitwarden/api:2022.9.2
+    container_name: bitwarden-api
+    restart: always
+    volumes:
+      - ./core:/etc/bitwarden/core
+      - ./ca-certificates:/etc/bitwarden/ca-certificates
+      - ./logs/api:/etc/bitwarden/logs
+    env_file:
+      - global.env
+
+  identity:
+    image: bitwarden/identity:2022.9.2
+    container_name: bitwarden-identity
+    restart: always
+    volumes:
+      - ./identity:/etc/bitwarden/identity
+      - ./core:/etc/bitwarden/core
+      - ./ca-certificates:/etc/bitwarden/ca-certificates
+      - ./logs/identity:/etc/bitwarden/logs
+    env_file:
+      - global.env
+
+  sso:
+    image: bitwarden/sso:2022.9.2
+    container_name: bitwarden-sso
+    restart: always
+    volumes:
+      - ./identity:/etc/bitwarden/identity
+      - ./core:/etc/bitwarden/core
+      - ./ca-certificates:/etc/bitwarden/ca-certificates
+      - ./logs/sso:/etc/bitwarden/logs
+    env_file:
+      - global.env
+
+  admin:
+    image: bitwarden/admin:2022.9.2
+    container_name: bitwarden-admin
+    restart: always
+    depends_on:
+      - mssql
+    volumes:
+      - ./core:/etc/bitwarden/core
+      - ./ca-certificates:/etc/bitwarden/ca-certificates
+      - ./logs/admin:/etc/bitwarden/logs
+    env_file:
+      - global.env
+
+  icons:
+    image: bitwarden/icons:2022.9.2
+    container_name: bitwarden-icons
+    restart: always
+    volumes:
+      - ./ca-certificates:/etc/bitwarden/ca-certificates
+      - ./logs/icons:/etc/bitwarden/logs
+    env_file:
+      - global.env
+
+  notifications:
+    image: bitwarden/notifications:2022.9.2
+    container_name: bitwarden-notifications
+    restart: always
+    volumes:
+      - ./ca-certificates:/etc/bitwarden/ca-certificates
+      - ./logs/notifications:/etc/bitwarden/logs
+    env_file:
+      - global.env
+
+  events:
+    image: bitwarden/events:2022.9.2
+    container_name: bitwarden-events
+    restart: always
+    volumes:
+      - ./ca-certificates:/etc/bitwarden/ca-certificates
+      - ./logs/events:/etc/bitwarden/logs
+    env_file:
+      - global.env
+
+  nginx:
+    image: bitwarden/nginx:2022.9.2
+    container_name: bitwarden-nginx
+    restart: always
+    depends_on:
+      - web
+      - admin
+      - api
+      - identity
+    ports:
+      - '8080:8080'
+      - '8443:8443'
+    volumes:
+      - ./nginx:/etc/bitwarden/nginx
+      - ./ssl:/etc/ssl
+      - ./logs/nginx:/var/log/nginx

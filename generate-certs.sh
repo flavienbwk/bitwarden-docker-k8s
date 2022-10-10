@@ -2,6 +2,7 @@
 # Generate certificates for your Bitwarden configuration
 
 CERTS_DN="${CERTS_DN:-/C=FR/ST=IDF/L=PARIS/O=EXAMPLE}"   # Edit here and in opensearch.yml
+IDENTITY_CERT_PASSWORD_IN="${IDENTITY_CERT_PASSWORD:-IDENTITY_CERT_PASSWORD}"
 
 # Root CA
 openssl genrsa -out ssl/ca.key 2048
@@ -14,4 +15,4 @@ openssl req -new -subj "$CERTS_DN/CN=bitwarden" -key ./ssl/bitwarden.key -out ./
 openssl x509 -req -in ./ssl/bitwarden.csr -CA ./ssl/ca.crt -CAkey ssl/ca.key -CAcreateserial -sha256 -out ./ssl/bitwarden.crt
 rm ./ssl/bitwarden-temp.key ./ssl/bitwarden.csr
 
-openssl pkcs12 -export -out ./identity/identity.pfx -inkey ./ssl/bitwarden.key -in ./ssl/ca.crt -in ./ssl/bitwarden.crt -password pass:IDENTITY_CERT_PASSWORD
+openssl pkcs12 -export -out ./identity/identity.pfx -inkey ./ssl/bitwarden.key -in ./ssl/ca.crt -in ./ssl/bitwarden.crt -password pass:"$IDENTITY_CERT_PASSWORD_IN"

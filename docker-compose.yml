@@ -1,4 +1,4 @@
-version: '3'
+version: '3.9'
 
 services:
   mssql:
@@ -37,7 +37,8 @@ services:
     restart: always
     volumes:
       - ./core:/etc/bitwarden/core
-      - ./ca-certificates:/etc/bitwarden/ca-certificates
+      - ./ssl/ca.crt:/etc/bitwarden/ca-certificates/ca.crt
+      - ./ssl/ca.key:/etc/bitwarden/ca-certificates/ca.key
       - ./logs/api:/etc/bitwarden/logs
     env_file:
       - global.env
@@ -49,7 +50,8 @@ services:
     volumes:
       - ./identity:/etc/bitwarden/identity
       - ./core:/etc/bitwarden/core
-      - ./ca-certificates:/etc/bitwarden/ca-certificates
+      - ./ssl/ca.crt:/etc/bitwarden/ca-certificates/ca.crt
+      - ./ssl/ca.key:/etc/bitwarden/ca-certificates/ca.key
       - ./logs/identity:/etc/bitwarden/logs
     env_file:
       - global.env
@@ -61,7 +63,8 @@ services:
     volumes:
       - ./identity:/etc/bitwarden/identity
       - ./core:/etc/bitwarden/core
-      - ./ca-certificates:/etc/bitwarden/ca-certificates
+      - ./ssl/ca.crt:/etc/bitwarden/ca-certificates/ca.crt
+      - ./ssl/ca.key:/etc/bitwarden/ca-certificates/ca.key
       - ./logs/sso:/etc/bitwarden/logs
     env_file:
       - global.env
@@ -74,7 +77,8 @@ services:
       - mssql
     volumes:
       - ./core:/etc/bitwarden/core
-      - ./ca-certificates:/etc/bitwarden/ca-certificates
+      - ./ssl/ca.crt:/etc/bitwarden/ca-certificates/ca.crt
+      - ./ssl/ca.key:/etc/bitwarden/ca-certificates/ca.key
       - ./logs/admin:/etc/bitwarden/logs
     env_file:
       - global.env
@@ -84,7 +88,8 @@ services:
     container_name: bitwarden-icons
     restart: always
     volumes:
-      - ./ca-certificates:/etc/bitwarden/ca-certificates
+      - ./ssl/ca.crt:/etc/bitwarden/ca-certificates/ca.crt
+      - ./ssl/ca.key:/etc/bitwarden/ca-certificates/ca.key
       - ./logs/icons:/etc/bitwarden/logs
     env_file:
       - global.env
@@ -94,7 +99,8 @@ services:
     container_name: bitwarden-notifications
     restart: always
     volumes:
-      - ./ca-certificates:/etc/bitwarden/ca-certificates
+      - ./ssl/ca.crt:/etc/bitwarden/ca-certificates/ca.crt
+      - ./ssl/ca.key:/etc/bitwarden/ca-certificates/ca.key
       - ./logs/notifications:/etc/bitwarden/logs
     env_file:
       - global.env
@@ -104,7 +110,8 @@ services:
     container_name: bitwarden-events
     restart: always
     volumes:
-      - ./ca-certificates:/etc/bitwarden/ca-certificates
+      - ./ssl/ca.crt:/etc/bitwarden/ca-certificates/ca.crt
+      - ./ssl/ca.key:/etc/bitwarden/ca-certificates/ca.key
       - ./logs/events:/etc/bitwarden/logs
     env_file:
       - global.env

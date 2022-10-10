@@ -42,9 +42,11 @@ The [official Docker installation](https://bitwarden.com/help/install-on-premise
 
 ## Usage for Kubernetes (Helm)
 
-I expect you to have a K8S instance configured and ready to be accessed by your `kubectl` CLI. You must have `helm` installed too.
+It is expected from you to have a K8S instance configured and ready to be accessed by your `kubectl` CLI. You must have `helm` installed too.
 
 I've used [Scaleway Kapsule](https://www.scaleway.com/en/kubernetes-kapsule) to perform my tests. This is an easy way to have a Kubernetes cluster quickly ready.
+
+:warning: This is a **beta** configuration. Please open an issue if you encounter any problem.
 
 1. Copy and edit `./kubernetes/values.yaml` file variables
 

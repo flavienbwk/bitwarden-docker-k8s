@@ -1,0 +1,108 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-events
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: events
+spec:
+  selector:
+    matchLabels:
+      app: events
+  template:
+    metadata:
+      labels:
+        app: events
+        release: events
+    spec:
+      restartPolicy: Always
+      containers:
+      - name: events
+        image: bitwarden/events:2022.9.2
+        ports:
+          - containerPort: 5000
+        envFrom:
+          - configMapRef:
+              name: {{ .Release.Name }}-configmap
+        env:
+          - name: globalSettings__sqlServer__connectionString
+            valueFrom:
+              secretKeyRef:
+                name: globalsettings--sqlserver
+                key: connectionString
+                optional: false
+          - name: globalSettings__mail__smtp__username
+            valueFrom:
+              secretKeyRef:
+                name: globalsettings--mail--smtp
+                key: username
+                optional: false
+          - name: globalSettings__mail__smtp__password
+            valueFrom:
+              secretKeyRef:
+                name: globalsettings--mail--smtp
+                key: password
+                optional: false
+          - name: globalSettings__installation__id
+            valueFrom:
+              secretKeyRef:
+                name: globalsettings--installation
+                key: id
+                optional: false
+          - name: globalSettings__installation__key
+            valueFrom:
+              secretKeyRef:
+                name: globalsettings--installation
+                key: key
+                optional: false
+          - name: globalSettings__identityServer__certificatePassword
+            valueFrom:
+              secretKeyRef:
+                name: globalsettings--identityserver
+                key: certificatePassword
+                optional: false
+          - name: globalSettings__internalIdentityKey
+            valueFrom:
+              secretKeyRef:
+                name: globalsettings--internalidentitykey
+                key: value
+                optional: false
+          - name: globalSettings__oidcIdentityClientKey
+            valueFrom:
+              secretKeyRef:
+                name: globalsettings--oidcidentityclientkey
+                key: value
+                optional: false
+          - name: globalSettings__duo__aKey
+            valueFrom:
+              secretKeyRef:
+                name: globalsettings--duo--akey
+                key: value
+                optional: false
+        volumeMounts:
+          - mountPath: /etc/ssl/bitwarden/ca
+            name: bitwarden-ca
+          - mountPath: /etc/ssl/bitwarden/client
+            name: bitwarden-client
+      volumes:
+        - name: bitwarden-ca
+          secret:
+            secretName: bitwarden-ca
+        - name: bitwarden-client
+          secret:
+            secretName: bitwarden-client
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-events
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    app: events
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 5000
+    targetPort: 5000

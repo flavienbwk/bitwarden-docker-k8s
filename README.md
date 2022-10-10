@@ -40,6 +40,69 @@ The [official Docker installation](https://bitwarden.com/help/install-on-premise
 
     The web UI will be available on ports `8080` (HTTP) or `8443` (HTTPS)
 
-## Usage for Kubernetes
+## Usage for Kubernetes (Helm)
 
-TODO
+It is expected from you to have a K8S instance configured and ready to be accessed by your `kubectl` CLI. You must have `helm` installed too.
+
+I've used [Scaleway Kapsule](https://www.scaleway.com/en/kubernetes-kapsule) to perform my tests. This is an easy way to have a Kubernetes cluster quickly ready.
+
+:warning: This is a **beta** configuration. Please open an issue if you encounter any problem.
+
+1. Copy and edit `./kubernetes/values.yaml` file variables
+
+    ```bash
+    cp ./kubernetes/values.example.yaml ./kubernetes/values.yaml
+    ```
+
+2. Configure certs & secrets
+
+    I recommend to copy the following commands in a text editor, replace values and execute it.
+
+    ```bash
+    NAMESPACE="bitwarden"
+    kubectl create ns "${NAMESPACE}"
+
+    # Certs
+    IDENTITY_CERT_PASSWORD="IDENTITY_CERT_PASSWORD"
+    CERTS_DN="/C=FR/ST=IDF/L=PARIS/O=EXAMPLE" \
+      IDENTITY_CERT_PASSWORD="$IDENTITY_CERT_PASSWORD" \
+      bash generate-certs.sh
+    kubectl create secret -n "${NAMESPACE}" tls bitwarden-ca --key ./ssl/ca.key --cert ./ssl/ca.crt
+    kubectl create secret -n "${NAMESPACE}" tls bitwarden-client --key ./ssl/bitwarden.key --cert ./ssl/bitwarden.crt
+    kubectl create secret -n "${NAMESPACE}" generic identity --from-file ./identity/identity.pfx
+
+    # Database credentials
+    DB_PASSWORD="$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 32)"
+    kubectl create secret -n "${NAMESPACE}" generic globalsettings--sqlserver \
+      --from-literal=connectionString="Data Source=tcp:bitwarden-mssql.${NAMESPACE},1433;Initial Catalog=vault;Persist Security Info=False;User ID=sa;Password=$DB_PASSWORD;MultipleActiveResultSets=False;Connect Timeout=30;Encrypt=True;TrustServerCertificate=True" \
+      --from-literal=saPassword="$DB_PASSWORD"
+
+    # SMTP settings
+    kubectl create secret -n "${NAMESPACE}" generic globalsettings--mail--smtp \
+      --from-literal=username=YOUR_SMTP_USERNAME \
+      --from-literal=password=YOUR_SMTP_PASSWORD
+
+    # Retrieve following values from https://bitwarden.com/host
+    kubectl create secret -n "${NAMESPACE}" generic globalsettings--installation \
+      --from-literal=id=00000000-0000-0000-0000-000000000000 \
+      --from-literal=key=SECRET_INSTALLATION_KEY
+
+    # Identity server secrets (nothing to edit)
+    kubectl create secret -n "${NAMESPACE}" generic globalsettings--identityserver \
+      --from-literal=certificatePassword="$IDENTITY_CERT_PASSWORD"
+    kubectl create secret -n "${NAMESPACE}" generic globalsettings--internalidentitykey \
+      --from-literal=value="$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 8)"
+    kubectl create secret -n "${NAMESPACE}" generic globalsettings--oidcidentityclientkey \
+      --from-literal=value="$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 8)"
+    kubectl create secret -n "${NAMESPACE}" generic globalsettings--duo--akey \
+      --from-literal=value="$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 8)"
+    ```
+
+3. Deploy chart
+
+    ```bash
+    NAMESPACE="bitwarden"
+    helm install bitwarden ./kubernetes \
+      -f ./kubernetes/values.yaml \
+      -n "${NAMESPACE}"
+    ```

@@ -1,0 +1,12 @@
+name: bitwarden-kubernetes
+
+apiVersion: v1
+type: application
+version: 2022.10.09-1
+
+description: Bitwarden kubernetes
+home: https://github.com/flavienbwk/bitwarden-docker-k8s
+
+maintainers:
+- email: flavien@berwick.fr
+  name: Flavien

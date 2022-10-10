@@ -1,0 +1,14 @@
+domain: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxx.nodes.k8s.fr-par.scw.cloud
+scheme: https
+
+global:
+  storageClassName: scw-bssd # Specific to Scaleway Kapsule
+  globalSettings__pushRelayBaseUri: https://push.bitwarden.com
+  globalSettings__mail__replyToEmail: no-reply@bitwarden.example.com
+  globalSettings__mail__smtp__host: REPLACE
+  globalSettings__mail__smtp__port: "587"
+  globalSettings__mail__smtp__ssl: "false"
+  globalSettings__yubico__clientId: REPLACE
+  globalSettings__yubico__key: REPLACE
+  globalSettings__disableUserRegistration: "false"
+  globalSettings__hibpApiKey: REPLACE

@@ -1,0 +1,68 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-nginx
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: nginx
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+        release: nginx
+    spec:
+      restartPolicy: Always
+      containers:
+      - name: nginx
+        image: bitwarden/nginx:2022.9.2
+        ports:
+          - containerPort: 8080
+            name: "http"
+          - containerPort: 8443
+            name: "https"
+        volumeMounts:
+          - mountPath: /etc/ssl/bitwarden/ca
+            name: bitwarden-ca
+          - mountPath: /etc/ssl/bitwarden/client
+            name: bitwarden-client
+          - mountPath: /etc/bitwarden/nginx/default.conf
+            subPath: default.conf
+            name: {{ .Release.Name }}-configmap
+          - mountPath: /var/log/nginx
+            name: logs
+      volumes:
+        - name: bitwarden-ca
+          secret:
+            secretName: bitwarden-ca
+        - name: bitwarden-client
+          secret:
+            secretName: bitwarden-client
+        - name: {{ .Release.Name }}-configmap
+          configMap:
+            name: {{ .Release.Name }}-configmap
+        - name: logs
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-nginx
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    app: nginx
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    name: "http"
+    port: 80
+    targetPort: 8080
+  - protocol: TCP
+    name: "https"
+    port: 443
+    targetPort: 8443

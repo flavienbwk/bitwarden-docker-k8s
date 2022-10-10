@@ -1,0 +1,87 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-mssql
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: mssql
+spec:
+  selector:
+    matchLabels:
+      app: mssql
+  template:
+    metadata:
+      labels:
+        app: mssql
+        release: mssql
+    spec:
+      restartPolicy: Always
+      containers:
+      - name: mssql
+        image: bitwarden/mssql:2022.9.2
+        env:
+          - name: ACCEPT_EULA
+            value: "Y"
+          - name: MSSQL_PID
+            value: "Express"
+          - name: SA_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: globalsettings--sqlserver
+                key: saPassword
+                optional: false
+        ports:
+          - containerPort: 1433
+        volumeMounts:
+          - mountPath: /var/opt/mssql/data
+            name: {{ .Release.Name }}-mssql-data-pvc
+          - mountPath: /etc/bitwarden/mssql/backups
+            name: {{ .Release.Name }}-mssql-backups-pvc
+      volumes:
+        - name: {{ .Release.Name }}-mssql-data-pvc
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-mssql-data-pvc
+        - name: {{ .Release.Name }}-mssql-backups-pvc
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-mssql-backups-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-mssql-data-pvc
+  namespace: {{ .Release.Namespace }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: {{ .Values.global.storageClassName }}
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-mssql-backups-pvc
+  namespace: {{ .Release.Namespace }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: {{ .Values.global.storageClassName }}
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-mssql
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    app: mssql
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 1433
+    targetPort: 1433
